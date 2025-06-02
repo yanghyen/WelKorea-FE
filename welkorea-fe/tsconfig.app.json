@@ -24,7 +24,11 @@
     "noUncheckedSideEffectImports": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+
+    "types": [
+      "kakao.maps.d.ts"
+    ]
   },
   "include": ["src"]
 }

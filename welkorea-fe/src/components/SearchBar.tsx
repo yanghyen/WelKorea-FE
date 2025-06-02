@@ -1,23 +1,28 @@
-import React, { useState } from 'react'
+import React from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function SearchBar() {
-  const [query, setQuery] = useState('')
+    const navigate = useNavigate();
 
-  const handleSearch = () => {
-    console.log('검색어:', query)
-    // TODO: API 연동
-  }
+    const goSearchPage = () => {
+        navigate("/SearchPage");
+    };
 
-  return (
-    <div style={{ padding: '10px', background: '#fff', zIndex: 100 }}>
-      <input
-        type="text"
-        placeholder="Search places"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        style={{ width: '80%' }}
-      />
-      <button onClick={handleSearch}>Search</button>
-    </div>
-  )
+    return (
+        <div
+            onClick={goSearchPage}
+            style={{
+                padding: "10px",
+                background: "#fff",
+                zIndex: 100,
+                height: "40px", // 클릭하기 편하게 높이 좀 키움
+                borderRadius: "8px", // 둥근 모서리
+                cursor: "pointer", // 마우스 올리면 클릭 가능 표시
+                display: "flex",
+                alignItems: "center",
+            }}
+        >
+           <span style={{ color: "gray", padding: "15px" }}>Where do you want to go?</span>
+        </div>
+    );
 }

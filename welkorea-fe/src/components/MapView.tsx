@@ -1,36 +1,98 @@
-import React, { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useGeolocation } from "../hooks/useGeolocation";
 
-export default function MapView() {
-    console.log("🟡 MapView 컴포넌트 진입!");
 
+const MapView = () => {
+    const mapRef = useRef(null);
+    const mapInstance = useRef<any>(null);
+    const markerInstance = useRef<any>(null);
+    const [mapHeight, setMapHeight] = useState("100vh");
+
+    const location = useGeolocation();
+
+    // 실제 뷰포트 높이 적용
     useEffect(() => {
-        const loadKakaoMap = () => {
-            console.log("🚀 SDK 로딩 시작")
-            console.log('🚩 Kakao Map Key:', import.meta.env.VITE_KAKAO_MAP_KEY)
-            
-            const script = document.createElement("script");
-            script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${import.meta.env.VITE_KAKAO_MAP_KEY}&autoload=false&libraries=services`;            // script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=6e2377538e7c2d476494bdd32b7161a0&autoload=false&libraries=services`;
-            script.onload = () => {
-                console.log("✅ Kakao SDK loaded!");
-                window.kakao.maps.load(() => {
-                    console.log("✅ Kakao Map loaded!");
-                    const container = document.getElementById("map")!;
-                    const options = {
-                        center: new window.kakao.maps.LatLng(37.5665, 126.978),
-                        level: 3,
-                    };
-                    const map = new window.kakao.maps.Map(container, options);
-                });
-            };
-            document.head.appendChild(script);
+        const handleResize = () => {
+            setMapHeight(`${window.innerHeight}px`);
         };
-        loadKakaoMap();
+
+        handleResize(); // 초기 1회 실행
+        window.addEventListener("resize", handleResize); // 리사이즈 대응
+
+        return () => window.removeEventListener("resize", handleResize);
     }, []);
 
+    useEffect(() => {
+        if (!location || !window.kakao || !mapRef.current) return;
+        const kakao = window.kakao;
+        const container = mapRef.current; // 지도를 담을 영역의 DOM 참조
+
+        const markerImage = new kakao.maps.MarkerImage(
+            "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png", // 아이콘 URL
+            new kakao.maps.Size(24, 35) // 아이콘 크기
+        );
+
+        if (!mapInstance.current) {
+            mapInstance.current = new kakao.maps.Map(container, {
+                center: new kakao.maps.LatLng(location.lat, location.lng),
+                level: 3,
+            });
+
+            markerInstance.current = new kakao.maps.Marker({
+                position: new kakao.maps.LatLng(location.lat, location.lng),
+                map: mapInstance.current,
+                image: markerImage,
+            });
+
+        } else {
+            const newPosition = new kakao.maps.LatLng(
+                location.lat,
+                location.lng
+            );
+            mapInstance.current.setCenter(newPosition);
+            markerInstance.current.setPosition(newPosition);
+        }
+    }, [location]);
+
+    const handleMoveToCureentLocation = () => {
+        if (!location || !mapInstance.current) return;
+        const newPosition = new window.kakao.maps.LatLng(
+            location.lat,
+            location.lng
+        );
+        mapInstance.current.setCenter(newPosition);
+        markerInstance.current.setPosition(newPosition);
+    };
+
     return (
-        <div
-            id="map"
-            style={{ width: "100%", height: "100vh", border: "1px solid red" }}
-        />
+        <>
+        <button
+        onClick={handleMoveToCureentLocation}
+        style={{
+            position: "fixed",
+            bottom: 100,
+            right: 20,
+            zIndex: 10,
+            padding: "10px 15px",
+            backgroundColor: "#000000cc",
+            color: "white",
+            border: "none",
+            borderRadius: 5,
+            cursor: "pointer",
+        }}  >내 위치로</button>
+            <div
+                ref={mapRef}
+                style={{
+                    width: "100%",
+                    height: mapHeight,
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    zIndex: 0,
+                }}
+            />
+        </>
     );
-}
+};
+
+export default MapView;

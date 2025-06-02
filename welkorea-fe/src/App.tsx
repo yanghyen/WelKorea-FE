@@ -1,13 +1,18 @@
 import './App.css'
-import MapView from './components/MapView'
+import MainPage from './pages/MainPage'
+import 'onsenui/css/onsenui.css';
+import 'onsenui/css/onsen-css-components.css';
+import SearchPage from './pages/SearchPage';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 export const App:React.FC = () => {
   return (
-    <>
-      <div style={{width: '100vw', height: '100vh'}}>
-        <MapView />
-      </div>
-    </>
+    <BrowserRouter>
+    <Routes>
+      <Route index element={<MainPage />} />
+      <Route path="/searchPage" element={<SearchPage />} />
+    </Routes>
+    </BrowserRouter>
   )
 }
 
