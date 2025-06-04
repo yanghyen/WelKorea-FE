@@ -1,19 +1,13 @@
-import './App.css'
-import MainPage from './pages/MainPage'
+// src/App.tsx
+import './App.css';
 import 'onsenui/css/onsenui.css';
 import 'onsenui/css/onsen-css-components.css';
-import SearchPage from './pages/SearchPage';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
-export const App:React.FC = () => {
-  return (
-    <BrowserRouter>
-    <Routes>
-      <Route index element={<MainPage />} />
-      <Route path="/searchPage" element={<SearchPage />} />
-    </Routes>
-    </BrowserRouter>
-  )
-}
+import { RouterProvider } from 'react-router-dom';
+import router from './router';
 
-export default App
+export const App: React.FC = () => {
+  return <RouterProvider router={router} />;
+};
+
+export default App;

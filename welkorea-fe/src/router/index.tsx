@@ -1,13 +1,21 @@
-// 여기서 라우터 구성하면 됨
+import { createBrowserRouter } from "react-router-dom";
+import MainPage from "../pages/MainPage";
+import SearchPage from "../pages/SearchPage";
+import RoadViewPage from "../pages/RoadViewPage";
 
-// import { BrowserRouter, Routes, Route } from 'react-router-dom'
-// import HomePage from '@/pages/Home'
-// export default function Router() {
-//   return (
-//     <BrowserRouter>
-//       <Routes>
-//         <Route path="/" element={<HomePage />} />
-//       </Routes>
-//     </BrowserRouter>
-//   )
-// }
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <MainPage />,
+  },
+  {
+    path: "/searchPage",
+    element: <SearchPage />,
+  },
+  {
+    path: "/roadview",
+    element: <RoadViewPage />
+  }
+]);
+
+export default router;

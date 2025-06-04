@@ -1,98 +1,150 @@
 import { useEffect, useRef, useState } from "react";
 import { useGeolocation } from "../hooks/useGeolocation";
+import currentLocationIcon from "../assets/current_location.png";
+import roadViewIcon from "../assets/roadView.png";
+import RoadView from "./RoadView";
+import { useNavigate } from "react-router-dom";
 
 
-const MapView = () => {
-    const mapRef = useRef(null);
-    const mapInstance = useRef<any>(null);
-    const markerInstance = useRef<any>(null);
-    const [mapHeight, setMapHeight] = useState("100vh");
+interface MapViewProps {
+  style?: React.CSSProperties;
+}
 
-    const location = useGeolocation();
+const MapView = ({ style }: MapViewProps) => {
+  const mapRef = useRef(null);
+  const mapInstance = useRef<any>(null);
+  const markerInstance = useRef<any>(null);
 
-    // 실제 뷰포트 높이 적용
-    useEffect(() => {
-        const handleResize = () => {
-            setMapHeight(`${window.innerHeight}px`);
+  const location = useGeolocation();
+  const  navigate = useNavigate();
+
+  useEffect(() => {
+    const loadKakaoMapScript = () => {
+      return new Promise<void>((resolve, reject) => {
+        if (window.kakao) {
+          resolve();
+          return;
+        }
+
+        const script = document.createElement("script");
+        script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=YOUR_APP_KEY&autoload=false`;
+        script.onload = () => {
+          window.kakao.maps.load(resolve);
         };
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    };
 
-        handleResize(); // 초기 1회 실행
-        window.addEventListener("resize", handleResize); // 리사이즈 대응
+    loadKakaoMapScript()
+      .then(() => {
+        if (!location || !mapRef.current) return;
 
-        return () => window.removeEventListener("resize", handleResize);
-    }, []);
-
-    useEffect(() => {
-        if (!location || !window.kakao || !mapRef.current) return;
         const kakao = window.kakao;
-        const container = mapRef.current; // 지도를 담을 영역의 DOM 참조
+        const container = mapRef.current;
 
         const markerImage = new kakao.maps.MarkerImage(
-            "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png", // 아이콘 URL
-            new kakao.maps.Size(24, 35) // 아이콘 크기
+          "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png",
+          new kakao.maps.Size(24, 35)
         );
 
         if (!mapInstance.current) {
-            mapInstance.current = new kakao.maps.Map(container, {
-                center: new kakao.maps.LatLng(location.lat, location.lng),
-                level: 3,
-            });
+          mapInstance.current = new kakao.maps.Map(container, {
+            center: new kakao.maps.LatLng(location.lat, location.lng),
+            level: 3,
+          });
 
-            markerInstance.current = new kakao.maps.Marker({
-                position: new kakao.maps.LatLng(location.lat, location.lng),
-                map: mapInstance.current,
-                image: markerImage,
-            });
-
+          markerInstance.current = new kakao.maps.Marker({
+            position: new kakao.maps.LatLng(location.lat, location.lng),
+            map: mapInstance.current,
+            image: markerImage,
+          });
         } else {
-            const newPosition = new kakao.maps.LatLng(
-                location.lat,
-                location.lng
-            );
-            mapInstance.current.setCenter(newPosition);
-            markerInstance.current.setPosition(newPosition);
+          const newPosition = new kakao.maps.LatLng(location.lat, location.lng);
+          mapInstance.current.setCenter(newPosition);
+          markerInstance.current.setPosition(newPosition);
         }
-    }, [location]);
+      })
+      .catch((error) => {
+        console.error("카카오 맵 스크립트 로딩 오류:", error);
+      });
+  }, [location]);
 
-    const handleMoveToCureentLocation = () => {
-        if (!location || !mapInstance.current) return;
-        const newPosition = new window.kakao.maps.LatLng(
-            location.lat,
-            location.lng
-        );
-        mapInstance.current.setCenter(newPosition);
-        markerInstance.current.setPosition(newPosition);
-    };
+  const handleMoveToCureentLocation = () => {
+    if (!location || !mapInstance.current) return;
+    const newPosition = new window.kakao.maps.LatLng(location.lat, location.lng);
+    mapInstance.current.setCenter(newPosition);
+    markerInstance.current.setPosition(newPosition);
+  };
 
-    return (
-        <>
-        <button
+  const goToRoadView = () => { 
+    if (!mapInstance.current) return;
+    const center = mapInstance.current.getCenter();
+    navigate(`/roadview?lat=${center.getLat()}&lng=${center.getLng()}`);
+   }
+
+  return (
+    <>
+      {/* 내 위치 버튼 */}
+      <button
         onClick={handleMoveToCureentLocation}
         style={{
-            position: "fixed",
-            bottom: 100,
-            right: 20,
-            zIndex: 10,
-            padding: "10px 15px",
-            backgroundColor: "#000000cc",
-            color: "white",
-            border: "none",
-            borderRadius: 5,
-            cursor: "pointer",
-        }}  >내 위치로</button>
-            <div
-                ref={mapRef}
-                style={{
-                    width: "100%",
-                    height: mapHeight,
-                    position: "fixed",
-                    top: 0,
-                    left: 0,
-                    zIndex: 0,
-                }}
-            />
-        </>
-    );
+          position: "fixed",
+          bottom: 140,
+          right: 20,
+          zIndex: 10,
+          width: 48,
+          height: 48,
+          borderRadius: "50%",
+          backgroundColor: "#ffffff",
+          border: "1px solid #ccc",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          padding: 0,
+        }}
+        aria-label="내 위치로 이동"
+      >
+        <img src={currentLocationIcon} alt="내 위치" style={{ width: 30, height: 30 }} />
+      </button>
+
+      {/* 로드뷰 버튼 */}
+      <button
+        onClick={goToRoadView}
+        style={{
+          position: "fixed",
+          top: 200,
+          right: 20,
+          width: 48,
+          height: 48,
+          borderRadius: "50%",
+          backgroundColor: "#ffffff",
+          border: "1px solid #ccc",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+          fontSize: 12,
+          cursor: "pointer",
+          zIndex: 10,
+        }}
+        aria-label="로드뷰 열기"
+      >
+        <img src={roadViewIcon} alt="로드뷰" style={{ width: 30, height: 30 }} ></img>
+      </button>
+
+      {/* 지도 */}
+      <div
+        ref={mapRef}
+        style={{
+          width: "100%",
+          height: "100%",
+          ...style,
+          zIndex: 0,
+        }}
+      
+        />
+    </>
+  );
 };
 
 export default MapView;
