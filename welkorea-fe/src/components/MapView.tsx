@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { useGeolocation } from "../hooks/useGeolocation";
 import currentLocationIcon from "../assets/current_location.png";
 import roadViewIcon from "../assets/roadView.png";
-import RoadView from "./RoadView";
 import { useNavigate } from "react-router-dom";
 
 
@@ -14,6 +13,7 @@ const MapView = ({ style }: MapViewProps) => {
   const mapRef = useRef(null);
   const mapInstance = useRef<any>(null);
   const markerInstance = useRef<any>(null);
+  
 
   const location = useGeolocation();
   const  navigate = useNavigate();

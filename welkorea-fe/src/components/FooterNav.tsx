@@ -23,8 +23,8 @@ const FooterNav = () => {
       }}
     >
       <button onClick={() => navigate("/")} style={navButtonStyle}>홈</button>
-      <button onClick={() => navigate("/favorites")} style={navButtonStyle}>찜</button>
-      <button onClick={() => navigate("/mypage")} style={navButtonStyle}>마이</button>
+      <button onClick={() => navigate("/favPage")} style={navButtonStyle}>찜</button>
+      <button onClick={() => navigate("/myPage")} style={navButtonStyle}>마이</button>
     </div>
   );
 };
