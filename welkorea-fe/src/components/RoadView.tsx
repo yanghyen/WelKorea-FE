@@ -98,9 +98,6 @@ const RoadView = () => {
         // 초기 로드뷰 세팅
         updateRoadView(lat, lng);
 
-        // 초기 오버레이 설정
-        map.addOverlayMapTypeId(kakao.maps.MapTypeId.ROADVIEW);
-
         return () => {
             marker.setMap(null);
             mapInstance.current = null;
@@ -118,18 +115,18 @@ const RoadView = () => {
         updateRoadView(location.lat, location.lng);
     };
 
-    const toggleOverlay = () => {
-        if (!mapInstance.current) return;
-        const map = mapInstance.current;
-        if (!overlayOn) {
-            map.addOverlayMapTypeId(window.kakao.maps.MapTypeId.ROADVIEW);
-            markerInstance.current.setMap(map);
-            updateRoadView(position.lat, position.lng);
-        } else {
-            map.removeOverlayMapTypeId(window.kakao.maps.MapTypeId.ROADVIEW);
-        }
-        setOverlayOn(!overlayOn);
-    };
+    // const toggleOverlay = () => {
+    //     if (!mapInstance.current) return;
+    //     const map = mapInstance.current;
+    //     if (!overlayOn) {
+    //         map.addOverlayMapTypeId(window.kakao.maps.MapTypeId.ROADVIEW);
+    //         markerInstance.current.setMap(map);
+    //         updateRoadView(position.lat, position.lng);
+    //     } else {
+    //         map.removeOverlayMapTypeId(window.kakao.maps.MapTypeId.ROADVIEW);
+    //     }
+    //     setOverlayOn(!overlayOn);
+    // };
 
     return (
         <div style={{ width: "100%", height: "100%", position: "fixed", top: 0, left: 0 }}>
@@ -181,13 +178,13 @@ const RoadView = () => {
                 <img src={goToCurrentLocationIcon} alt="내 위치" style={{ width: 30, height: 30 }} />
             </button>
 
-            {/* 오버레이 토글 */}
+            {/* 오버레이 토글
             <button
                 onClick={toggleOverlay}
                 style={floatingButtonStyle(70, 20)}
             >
                 {overlayOn ? "도로 끄기" : "도로 보기"}
-            </button>
+            </button> */}
         </div>
     );
 };
