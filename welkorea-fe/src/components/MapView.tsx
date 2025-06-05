@@ -1,8 +1,10 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useGeolocation } from "../hooks/useGeolocation";
-import currentLocationIcon from "../assets/current_location.png";
-import roadViewIcon from "../assets/roadView.png";
 import { useNavigate } from "react-router-dom";
+
+import goToCurrentLocationIcon from "../assets/go_to_current_location.png";
+import roadViewIcon from "../assets/roadView.png";
+import currentLocationIcon from "../assets/current_location.png";
 
 interface MapViewProps {
     style?: React.CSSProperties;
@@ -16,6 +18,9 @@ const MapView = ({ style }: MapViewProps) => {
     const location = useGeolocation();
     const navigate = useNavigate();
 
+    // location 초기화 될 때 렌더링 방지
+    const [initialized, setInitialized] = useState(false); 
+
     useEffect(() => {
         if (!window.kakao || !location || !mapRef.current) return;
 
@@ -23,30 +28,27 @@ const MapView = ({ style }: MapViewProps) => {
         const container = mapRef.current;
 
         const markerImage = new kakao.maps.MarkerImage(
-            "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png",
-            new kakao.maps.Size(24, 35)
+            currentLocationIcon,
+            new kakao.maps.Size(18, 18)
         );
 
-        if (!mapInstance.current) {
-            mapInstance.current = new kakao.maps.Map(container, {
+        if (!initialized) {
+            const map = new kakao.maps.Map(container, {
                 center: new kakao.maps.LatLng(location.lat, location.lng),
                 level: 3,
             });
 
-            markerInstance.current = new kakao.maps.Marker({
+            const marker = new kakao.maps.Marker({
                 position: new kakao.maps.LatLng(location.lat, location.lng),
-                map: mapInstance.current,
+                map,
                 image: markerImage,
             });
-        } else {
-            const newPosition = new kakao.maps.LatLng(
-                location.lat,
-                location.lng
-            );
-            mapInstance.current.setCenter(newPosition);
-            markerInstance.current.setPosition(newPosition);
+
+            mapInstance.current = map;
+            markerInstance.current = marker;
+            setInitialized(true); // ✅ 초기화 완료
         }
-    }, [location]);
+    }, [location, initialized]);
 
     const handleMoveToCureentLocation = () => {
         if (!location || !mapInstance.current || !markerInstance.current)
@@ -90,7 +92,7 @@ const MapView = ({ style }: MapViewProps) => {
                 aria-label="내 위치로 이동"
             >
                 <img
-                    src={currentLocationIcon}
+                    src={goToCurrentLocationIcon}
                     alt="내 위치"
                     style={{ width: 30, height: 30 }}
                 />

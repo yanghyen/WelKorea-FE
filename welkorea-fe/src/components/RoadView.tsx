@@ -1,129 +1,227 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import goToCurrentLocationIcon from "../assets/go_to_current_location.png";
+import { useGeolocation } from "../hooks/useGeolocation";
 
 const RoadView = () => {
-  const roadviewRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<HTMLDivElement>(null);
-  const previewRef = useRef<HTMLDivElement>(null);
+    const mapRef = useRef<HTMLDivElement>(null);
+    const roadviewRef = useRef<HTMLDivElement>(null);
+    const mapInstance = useRef<any>(null);
+    const roadviewInstance = useRef<any>(null);
+    const markerInstance = useRef<any>(null);
+    const roadviewClient = useRef<any>(null);
 
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
 
-  const lat = parseFloat(searchParams.get("lat") || "0");
-  const lng = parseFloat(searchParams.get("lng") || "0");
+    const lat = parseFloat(searchParams.get("lat") || "37.5665");
+    const lng = parseFloat(searchParams.get("lng") || "126.9780");
 
-  const [position, setPosition] = useState({ lat, lng });
-  const [showPreview, setShowPreview] = useState(false);
+    const location = useGeolocation();
 
-  useEffect(() => {
-    if (!window.kakao || !mapRef.current || !roadviewRef.current) return;
+    const [position, setPosition] = useState({ lat, lng });
+    const [isFullScreen, setIsFullScreen] = useState(false);
+    const [overlayOn, setOverlayOn] = useState(true);
 
-    const kakao = window.kakao;
-    const map = new kakao.maps.Map(mapRef.current, {
-      center: new kakao.maps.LatLng(lat, lng),
-      level: 3,
-    });
-
-    const marker = new kakao.maps.Marker({
-      position: new kakao.maps.LatLng(lat, lng),
-      map,
-      draggable: true,
-    });
-
-    const updatePreview = (lat: number, lng: number) => {
-      const position = new kakao.maps.LatLng(lat, lng);
-      const roadviewClient = new kakao.maps.RoadviewClient();
-
-      roadviewClient.getNearestPanoId(position, 50, (panoId: any) => {
-        if (panoId && previewRef.current) {
-          const rv = new kakao.maps.Roadview(previewRef.current);
-          rv.setPanoId(panoId, position);
-          setShowPreview(true);
-        } else {
-          setShowPreview(false);
-        }
-      });
+    const updateRoadView = (lat: number, lng: number) => {
+        const kakao = window.kakao;
+        const pos = new kakao.maps.LatLng(lat, lng);
+        roadviewClient.current.getNearestPanoId(pos, 50, (panoId: any) => {
+            if (panoId) {
+                roadviewInstance.current.setPanoId(panoId, pos);
+            } else {
+                setIsFullScreen(true); // 로드뷰 데이터 없으면 로드뷰 숨김
+            }
+        });
     };
 
-    kakao.maps.event.addListener(marker, "dragend", () => {
-      const pos = marker.getPosition();
-      const newLat = pos.getLat();
-      const newLng = pos.getLng();
-      setPosition({ lat: newLat, lng: newLng });
-      updatePreview(newLat, newLng);
-    });
+    useEffect(() => {
+        const kakao = window.kakao;
+        if (!kakao || !mapRef.current || !roadviewRef.current) return;
 
-    // 초기 프리뷰 표시
-    updatePreview(lat, lng);
-  }, [lat, lng]);
+        // 지도 초기화
+        const map = new kakao.maps.Map(mapRef.current, {
+            center: new kakao.maps.LatLng(lat, lng),
+            level: 3,
+        });
+        mapInstance.current = map;
 
-  const openFullRoadView = () => {
-    const kakao = window.kakao;
-    const pos = new kakao.maps.LatLng(position.lat, position.lng);
-    const rv = new kakao.maps.Roadview(roadviewRef.current!);
-    const client = new kakao.maps.RoadviewClient();
+        // 로드뷰 초기화
+        const roadview = new kakao.maps.Roadview(roadviewRef.current);
+        roadviewInstance.current = roadview;
 
-    client.getNearestPanoId(pos, 50, (panoId: any) => {
-      if (panoId) {
-        rv.setPanoId(panoId, pos);
-        setShowPreview(false);
-      } else {
-        alert("해당 위치는 로드뷰를 지원하지 않습니다.");
-      }
-    });
-  };
+        // 로드뷰 클라이언트
+        roadviewClient.current = new kakao.maps.RoadviewClient();
 
-  return (
-    <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", zIndex: 100 }}>
-      {/* 전체 로드뷰 */}
-      <div
-        ref={roadviewRef}
-        style={{ width: "100%", height: showPreview ? "0%" : "50%", transition: "height 0.3s" }}
-      />
+        // 마커 이미지 설정
+        const markerImage = new kakao.maps.MarkerImage(
+            "https://t1.daumcdn.net/localimg/localimages/07/2018/pc/roadview_minimap_wk_2018.png",
+            new kakao.maps.Size(26, 46),
+            {
+                spriteSize: new kakao.maps.Size(1666, 168),
+                spriteOrigin: new kakao.maps.Point(705, 114),
+                offset: new kakao.maps.Point(13, 46),
+            }
+        );
 
-      {/* 지도 영역 */}
-      <div style={{ width: "100%", height: showPreview ? "100%" : "50%" }} ref={mapRef} />
+        // 마커 생성
+        const marker = new kakao.maps.Marker({
+            position: new kakao.maps.LatLng(lat, lng),
+            image: markerImage,
+            draggable: true,
+            map,
+        });
+        markerInstance.current = marker;
 
-      {/* 미리보기 로드뷰 (클릭 시 전체 로드뷰 활성화) */}
-      {showPreview && (
-        <div
-          onClick={openFullRoadView}
-          style={{
-            position: "absolute",
-            top: 20,
-            left: 20,
-            width: 200,
-            height: 120,
-            zIndex: 110,
-            border: "2px solid #fff",
-            boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
-            cursor: "pointer",
-          }}
-        >
-          <div ref={previewRef} style={{ width: "100%", height: "100%" }} />
+        // 마커 드래그 시 로드뷰 업데이트
+        kakao.maps.event.addListener(marker, "dragend", () => {
+            const pos = marker.getPosition();
+            setPosition({ lat: pos.getLat(), lng: pos.getLng() });
+            updateRoadView(pos.getLat(), pos.getLng());
+        });
+
+        // 지도 클릭 시 마커 및 로드뷰 이동
+        kakao.maps.event.addListener(map, "click", (mouseEvent: any) => {
+            if (!overlayOn) return;
+            const clickPos = mouseEvent.latLng;
+            marker.setPosition(clickPos);
+            updateRoadView(clickPos.getLat(), clickPos.getLng());
+        });
+
+        // 로드뷰 위치 변경 시 지도 중심 이동
+        kakao.maps.event.addListener(roadview, "position_changed", () => {
+            const pos = roadview.getPosition();
+            map.setCenter(pos);
+            if (overlayOn) marker.setPosition(pos);
+        });
+
+        // 초기 로드뷰 세팅
+        updateRoadView(lat, lng);
+
+        // 초기 오버레이 설정
+        map.addOverlayMapTypeId(kakao.maps.MapTypeId.ROADVIEW);
+
+        return () => {
+            marker.setMap(null);
+            mapInstance.current = null;
+            roadviewInstance.current = null;
+        };
+    }, []);
+
+    const toggleFullScreen = () => setIsFullScreen(prev => !prev);
+
+    const handleMoveToCurrentLocation = () => {
+        if (!location) return;
+        const newLatLng = new window.kakao.maps.LatLng(location.lat, location.lng);
+        mapInstance.current.setCenter(newLatLng);
+        markerInstance.current.setPosition(newLatLng);
+        updateRoadView(location.lat, location.lng);
+    };
+
+    const toggleOverlay = () => {
+        if (!mapInstance.current) return;
+        const map = mapInstance.current;
+        if (!overlayOn) {
+            map.addOverlayMapTypeId(window.kakao.maps.MapTypeId.ROADVIEW);
+            markerInstance.current.setMap(map);
+            updateRoadView(position.lat, position.lng);
+        } else {
+            map.removeOverlayMapTypeId(window.kakao.maps.MapTypeId.ROADVIEW);
+        }
+        setOverlayOn(!overlayOn);
+    };
+
+    return (
+        <div style={{ width: "100%", height: "100%", position: "fixed", top: 0, left: 0 }}>
+            {/* 로드뷰 영역 */}
+            <div
+                ref={roadviewRef}
+                style={{
+                    width: "100%",
+                    height: isFullScreen ? "100%" : "50%",
+                    transition: "height 0.3s",
+                    zIndex: 1,
+                }}
+            />
+
+            {/* 지도 영역 */}
+            <div
+                ref={mapRef}
+                style={{
+                    width: "100%",
+                    height: isFullScreen ? "0%" : "50%",
+                    display: isFullScreen ? "none" : "block",
+                    transition: "height 0.3s",
+                    zIndex: 0,
+                }}
+            />
+
+            {/* 전체 화면 토글 */}
+            <button
+                onClick={toggleFullScreen}
+                style={floatingButtonStyle(20, 20)}
+            >
+                {isFullScreen ? "나가기" : "전체화면"}
+            </button>
+
+            {/* 닫기 */}
+            <button
+                onClick={() => navigate(-1)}
+                style={floatingButtonStyle(20, undefined, 20)}
+            >
+                닫기
+            </button>
+
+            {/* 현재 위치 이동 */}
+            <button
+                onClick={handleMoveToCurrentLocation}
+                style={circleButtonStyle(140)}
+                aria-label="내 위치로 이동"
+            >
+                <img src={goToCurrentLocationIcon} alt="내 위치" style={{ width: 30, height: 30 }} />
+            </button>
+
+            {/* 오버레이 토글 */}
+            <button
+                onClick={toggleOverlay}
+                style={floatingButtonStyle(70, 20)}
+            >
+                {overlayOn ? "도로 끄기" : "도로 보기"}
+            </button>
         </div>
-      )}
-
-      {/* 닫기 버튼 */}
-      <button
-        onClick={() => navigate(-1)}
-        style={{
-          position: "absolute",
-          top: 16,
-          right: 16,
-          zIndex: 120,
-          background: "#fff",
-          border: "none",
-          borderRadius: 8,
-          padding: "6px 12px",
-          boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
-          cursor: "pointer",
-        }}
-      >
-        닫기
-      </button>
-    </div>
-  );
+    );
 };
+
+const floatingButtonStyle = (top: number, right?: number, left?: number): React.CSSProperties => ({
+    position: "absolute",
+    top,
+    right,
+    left,
+    zIndex: 10,
+    padding: "8px 12px",
+    backgroundColor: "#fff",
+    border: "1px solid #ccc",
+    borderRadius: 6,
+    cursor: "pointer",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+});
+
+const circleButtonStyle = (bottom: number): React.CSSProperties => ({
+    position: "fixed",
+    bottom,
+    right: 20,
+    zIndex: 10,
+    width: 48,
+    height: 48,
+    borderRadius: "50%",
+    backgroundColor: "#ffffff",
+    border: "1px solid #ccc",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    padding: 0,
+});
 
 export default RoadView;
