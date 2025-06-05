@@ -44,10 +44,10 @@ const SearchInput = ({ value, onChange, suggestions, onSelect }: SearchInputProp
                     type="text"
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
-                    placeholder="장소를 검색하세요"
+                    placeholder="Where do you want to go?"
                     style={{
                         flex: 1,
-                        padding: "14px 16px",
+                        padding: "18px 10px",
                         fontSize: "16px",
                         border: "none",
                         borderBottom: "1px solid #ccc",

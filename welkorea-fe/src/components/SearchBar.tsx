@@ -15,9 +15,9 @@ export default function SearchBar() {
                 padding: "10px",
                 background: "#fff",
                 zIndex: 100,
-                height: "40px", // 클릭하기 편하게 높이 좀 키움
-                borderRadius: "8px", // 둥근 모서리
-                cursor: "pointer", // 마우스 올리면 클릭 가능 표시
+                height: "40px", 
+                borderRadius: "8px", 
+                cursor: "pointer", 
                 display: "flex",
                 alignItems: "center",
             }}
