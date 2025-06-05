@@ -23,9 +23,9 @@ export function useGeolocation() {
                 setLocation(null);
             },
             {
-              enableHighAccuracy: true,
-              maximumAge: 1000,
-              timeout: 5000
+                enableHighAccuracy: true,
+                maximumAge: 1000,
+                timeout: 5000,
             }
         );
         return () => navigator.geolocation.clearWatch(watcher);

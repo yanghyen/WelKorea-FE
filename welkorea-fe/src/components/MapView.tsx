@@ -18,8 +18,8 @@ const MapView = ({ style }: MapViewProps) => {
     const location = useGeolocation();
     const navigate = useNavigate();
 
-    // location 초기화 될 때 렌더링 방지
-    const [initialized, setInitialized] = useState(false); 
+    // location 바뀔 때 리렌더링 방지
+    const [initialized, setInitialized] = useState(false);
 
     useEffect(() => {
         if (!window.kakao || !location || !mapRef.current) return;
@@ -46,7 +46,7 @@ const MapView = ({ style }: MapViewProps) => {
 
             mapInstance.current = map;
             markerInstance.current = marker;
-            setInitialized(true); // ✅ 초기화 완료
+            setInitialized(true);
         }
     }, [location, initialized]);
 
