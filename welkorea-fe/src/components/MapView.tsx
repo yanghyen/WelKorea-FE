@@ -69,7 +69,6 @@ const MapView = ({ style }: MapViewProps) => {
 
     return (
         <>
-            {/* 내 위치 버튼 */}
             <button
                 onClick={handleMoveToCureentLocation}
                 style={{
@@ -98,7 +97,6 @@ const MapView = ({ style }: MapViewProps) => {
                 />
             </button>
 
-            {/* 로드뷰 버튼 */}
             <button
                 onClick={goToRoadView}
                 style={{
@@ -124,7 +122,6 @@ const MapView = ({ style }: MapViewProps) => {
                 />
             </button>
 
-            {/* 지도 */}
             <div
                 ref={mapRef}
                 style={{

@@ -23,14 +23,13 @@ const usePlaceSearch = (query: string, location?: Coordinate) => {
                 location: location
                     ? new window.kakao.maps.LatLng(location.lat, location.lng)
                     : undefined,
-                radius: 5000, // 5km 반경
+                radius: 5000, 
                 sort: window.kakao.maps.services.SortBy.DISTANCE,
             };
 
             ps.keywordSearch(query, (data: any, status: any) => {
                 setLoading(false);
                 if (status === window.kakao.maps.services.Status.OK) {
-                    // 필터: query로 **시작하는** place_name만
                     const lowerQuery = query.toLowerCase();
                     const filtered = data.filter((place: any) =>
                         place.place_name.toLowerCase().startsWith(lowerQuery)

@@ -15,12 +15,11 @@ const SearchInput = ({ value, onChange, suggestions, onSelect }: SearchInputProp
     const navigate = useNavigate();
 
     useEffect(() => {
-        inputRef.current?.focus(); // 자동 포커스
+        inputRef.current?.focus(); 
     }, []);
 
     return (
         <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
-            {/* 상단 입력 라인 */}
             <div style={{ display: "flex", alignItems: "center" }}>
                 <button
                     onClick={() => navigate("/")}
@@ -57,7 +56,6 @@ const SearchInput = ({ value, onChange, suggestions, onSelect }: SearchInputProp
                 />
             </div>
 
-            {/* 검색 결과 리스트 */}
             <div style={{ marginTop: 8 }}>
                 {suggestions.map((suggestion, index) => (
                     <div

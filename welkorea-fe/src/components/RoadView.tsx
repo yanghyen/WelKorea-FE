@@ -30,7 +30,7 @@ const RoadView = () => {
             if (panoId) {
                 roadviewInstance.current.setPanoId(panoId, pos);
             } else {
-                setIsFullScreen(true); // 로드뷰 데이터 없으면 로드뷰 숨김
+                setIsFullScreen(true); 
             }
         });
     };
@@ -39,21 +39,17 @@ const RoadView = () => {
         const kakao = window.kakao;
         if (!kakao || !mapRef.current || !roadviewRef.current) return;
 
-        // 지도 초기화
         const map = new kakao.maps.Map(mapRef.current, {
             center: new kakao.maps.LatLng(lat, lng),
             level: 3,
         });
         mapInstance.current = map;
 
-        // 로드뷰 초기화
         const roadview = new kakao.maps.Roadview(roadviewRef.current);
         roadviewInstance.current = roadview;
 
-        // 로드뷰 클라이언트
         roadviewClient.current = new kakao.maps.RoadviewClient();
-
-        // 마커 이미지 설정
+        
         const markerImage = new kakao.maps.MarkerImage(
             "https://t1.daumcdn.net/localimg/localimages/07/2018/pc/roadview_minimap_wk_2018.png",
             new kakao.maps.Size(26, 46),
@@ -64,7 +60,6 @@ const RoadView = () => {
             }
         );
 
-        // 마커 생성
         const marker = new kakao.maps.Marker({
             position: new kakao.maps.LatLng(lat, lng),
             image: markerImage,
@@ -73,14 +68,12 @@ const RoadView = () => {
         });
         markerInstance.current = marker;
 
-        // 마커 드래그 시 로드뷰 업데이트
         kakao.maps.event.addListener(marker, "dragend", () => {
             const pos = marker.getPosition();
             setPosition({ lat: pos.getLat(), lng: pos.getLng() });
             updateRoadView(pos.getLat(), pos.getLng());
         });
 
-        // 지도 클릭 시 마커 및 로드뷰 이동
         kakao.maps.event.addListener(map, "click", (mouseEvent: any) => {
             if (!overlayOn) return;
             const clickPos = mouseEvent.latLng;
@@ -88,14 +81,12 @@ const RoadView = () => {
             updateRoadView(clickPos.getLat(), clickPos.getLng());
         });
 
-        // 로드뷰 위치 변경 시 지도 중심 이동
         kakao.maps.event.addListener(roadview, "position_changed", () => {
             const pos = roadview.getPosition();
             map.setCenter(pos);
             if (overlayOn) marker.setPosition(pos);
         });
 
-        // 초기 로드뷰 세팅
         updateRoadView(lat, lng);
 
         return () => {
@@ -130,7 +121,6 @@ const RoadView = () => {
 
     return (
         <div style={{ width: "100%", height: "100%", position: "fixed", top: 0, left: 0 }}>
-            {/* 로드뷰 영역 */}
             <div
                 ref={roadviewRef}
                 style={{
@@ -141,7 +131,6 @@ const RoadView = () => {
                 }}
             />
 
-            {/* 지도 영역 */}
             <div
                 ref={mapRef}
                 style={{
@@ -153,23 +142,20 @@ const RoadView = () => {
                 }}
             />
 
-            {/* 전체 화면 토글 */}
             <button
                 onClick={toggleFullScreen}
                 style={floatingButtonStyle(20, 20)}
             >
-                {isFullScreen ? "나가기" : "전체화면"}
+                {isFullScreen ? "back" : "full screen"}
             </button>
 
-            {/* 닫기 */}
             <button
                 onClick={() => navigate(-1)}
                 style={floatingButtonStyle(20, undefined, 20)}
             >
-                닫기
+                close
             </button>
 
-            {/* 현재 위치 이동 */}
             <button
                 onClick={handleMoveToCurrentLocation}
                 style={circleButtonStyle(140)}
